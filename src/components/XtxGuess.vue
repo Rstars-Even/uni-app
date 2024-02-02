@@ -1,17 +1,29 @@
 <script setup lang="ts">
-// import { onMounted } from '@dcloudio/uni-app'
 import { ref, onMounted } from 'vue'
 import { getHomeGoodsGuessLikeAPI } from '@/services/home'
 import type { GuessItem } from '@/types/home'
+import type { PageParams } from '@/types/global'
+
+// 分页参数
+const pageParams: Required<PageParams> = {
+  page: 1,
+  pageSize: 10,
+}
 
 // 获取猜你喜欢数据。
 const guessList = ref<GuessItem[]>([])
 const getGoodsData = async () => {
   const res = await getHomeGoodsGuessLikeAPI()
-  guessList.value = res.result.items
+  guessList.value.push(...res.result.items)
+  pageParams.page++
+  console.log('--------------------------', guessList.value)
 }
 onMounted(() => {
   getGoodsData()
+})
+// 暴露数据请求的方法
+defineExpose({
+  getMore: getGoodsData,
 })
 </script>
 

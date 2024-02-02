@@ -1,6 +1,6 @@
 // 存放路径: src/services/home.ts
 import type { BannerItem, CategoryItem, HotItem, GuessItem } from '@/types/home'
-import type { PageResult } from '@/types/global'
+import type { PageResult, PageParams } from '@/types/global'
 import { http } from '@/utils/http'
 
 /**
@@ -43,10 +43,10 @@ export const getHomeHotAPI = () => {
 /**
  * 猜你喜欢-小程序
  */
-export const getHomeGoodsGuessLikeAPI = () => {
+export const getHomeGoodsGuessLikeAPI = (data?: PageParams) => {
   return http<PageResult<GuessItem>>({
     method: 'GET',
     url: '/home/goods/guessLike',
-    // data,
+    data,
   })
 }

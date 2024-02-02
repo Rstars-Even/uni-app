@@ -1,7 +1,7 @@
 <template>
   <!-- 自定义导航栏组件 -->
   <CustomNavbar />
-  <scroll-view scroll-y class="scroll-view">
+  <scroll-view scroll-y @scrolltolower="onScrolltolower" class="scroll-view">
     <!-- 轮播图组件 -->
     <XtxSwiper :list="bannerList" />
     <!-- 首页分类组件 -->
@@ -9,7 +9,7 @@
     <!-- 热门推荐组件 -->
     <HotPanel :list="hotList" />
     <!-- 猜你喜欢组件 -->
-    <XtxGuess />
+    <XtxGuess ref="guessRef" />
   </scroll-view>
 </template>
 
@@ -21,6 +21,13 @@ import { getHomeBannerAPI, getHomeCategoryAPI, getHomeHotAPI } from '@/services/
 import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
+
+// 获取猜你喜欢组件实例。
+const guessRef = ref()
+// 滚动触底事件。
+const onScrolltolower = () => {
+  guessRef.value?.getMore()
+}
 
 // 获取轮播图数据。。
 const bannerList = ref<BannerItem[]>([])

@@ -1,7 +1,14 @@
 <template>
   <!-- 自定义导航栏组件 -->
   <CustomNavbar />
-  <scroll-view scroll-y @scrolltolower="onScrolltolower" class="scroll-view">
+  <scroll-view
+    refresher-enabled
+    @refresherrefresh="onRefresherrefresh"
+    :refresher-triggered="isTriggered"
+    scroll-y
+    @scrolltolower="onScrolltolower"
+    class="scroll-view"
+  >
     <!-- 轮播图组件 -->
     <XtxSwiper :list="bannerList" />
     <!-- 首页分类组件 -->
@@ -27,6 +34,29 @@ const guessRef = ref()
 // 滚动触底事件。
 const onScrolltolower = () => {
   guessRef.value?.getMore()
+}
+
+// 当前下拉刷新状态。
+const isTriggered = ref(false)
+// 下拉刷新事件。
+const onRefresherrefresh = async () => {
+  // 开始动画
+  isTriggered.value = true
+  guessRef.value?.resetData()
+  // 下拉首页重新加载数据。
+  // await getHomeBannerData()
+  // await categoryListrData()
+  // await hotListrData()
+  // await guessRef.value?.getMore()
+  // 优化。
+  await Promise.all([
+    getHomeBannerData(),
+    categoryListrData(),
+    hotListrData(),
+    guessRef.value?.getMore(),
+  ])
+  // 结束动画
+  isTriggered.value = false
 }
 
 // 获取轮播图数据。。

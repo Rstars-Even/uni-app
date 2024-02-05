@@ -12,17 +12,34 @@ const pageParams: Required<PageParams> = {
 
 // 获取猜你喜欢数据。
 const guessList = ref<GuessItem[]>([])
+const finish = ref(false)
 const getGoodsData = async () => {
-  const res = await getHomeGoodsGuessLikeAPI()
+  if (finish.value === true) {
+    return uni.showToast({ icon: 'none', title: '没有更多了~~~' })
+  }
+  const res = await getHomeGoodsGuessLikeAPI(pageParams)
   guessList.value.push(...res.result.items)
-  pageParams.page++
-  console.log('--------------------------', guessList.value)
+
+  if (pageParams.page < res.result.pages) {
+    pageParams.page++
+    console.log('--------------------------', guessList.value)
+  } else {
+    finish.value = true
+  }
+}
+
+// 数据重置
+const resetData = () => {
+  pageParams.page = 1
+  guessList.value = []
+  finish.value = false
 }
 onMounted(() => {
   getGoodsData()
 })
 // 暴露数据请求的方法
 defineExpose({
+  resetData,
   getMore: getGoodsData,
 })
 </script>
@@ -47,7 +64,7 @@ defineExpose({
       </view>
     </navigator>
   </view>
-  <view class="loading-text"> 正在加载... </view>
+  <view class="loading-text"> {{ finish ? '没有更多了~~~' : '正在加载...' }} </view>
 </template>
 
 <style lang="scss">

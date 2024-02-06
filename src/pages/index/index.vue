@@ -9,14 +9,18 @@
     @scrolltolower="onScrolltolower"
     class="scroll-view"
   >
-    <!-- 轮播图组件 -->
-    <XtxSwiper :list="bannerList" />
-    <!-- 首页分类组件 -->
-    <CategoryPanel :list="categoryList" />
-    <!-- 热门推荐组件 -->
-    <HotPanel :list="hotList" />
-    <!-- 猜你喜欢组件 -->
-    <XtxGuess ref="guessRef" />
+    <!-- 骨架屏组件。 -->
+    <PageSkeleton v-if="isLoading" />
+    <template v-else>
+      <!-- 轮播图组件 -->
+      <XtxSwiper :list="bannerList" />
+      <!-- 首页分类组件 -->
+      <CategoryPanel :list="categoryList" />
+      <!-- 热门推荐组件 -->
+      <HotPanel :list="hotList" />
+      <!-- 猜你喜欢组件 -->
+      <XtxGuess ref="guessRef" />
+    </template>
   </scroll-view>
 </template>
 
@@ -24,6 +28,7 @@
 import CustomNavbar from './components/CustomNavbar.vue'
 import CategoryPanel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
+import PageSkeleton from './components/PageSkeleton.vue'
 import { getHomeBannerAPI, getHomeCategoryAPI, getHomeHotAPI } from '@/services/home'
 import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import { onLoad } from '@dcloudio/uni-app'
@@ -81,10 +86,12 @@ const hotListrData = async () => {
   hotList.value = res.result
 }
 
-onLoad(() => {
-  getHomeBannerData()
-  categoryListrData()
-  hotListrData()
+const isLoading = ref(false)
+
+onLoad(async () => {
+  isLoading.value = true
+  await Promise.all([getHomeBannerData(), categoryListrData(), hotListrData()])
+  isLoading.value = false
 })
 </script>
 

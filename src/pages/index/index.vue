@@ -33,13 +33,16 @@ import { getHomeBannerAPI, getHomeCategoryAPI, getHomeHotAPI } from '@/services/
 import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
+import { useGuessList } from '@/composables'
 
 // 获取猜你喜欢组件实例。
-const guessRef = ref()
-// 滚动触底事件。
-const onScrolltolower = () => {
-  guessRef.value?.getMore()
-}
+// const guessRef = ref()
+// // 滚动触底事件。
+// const onScrolltolower = () => {
+//   guessRef.value?.getMore()
+// }
+// 猜你喜欢组合式函数
+const { guessRef, onScrolltolower } = useGuessList()
 
 // 当前下拉刷新状态。
 const isTriggered = ref(false)

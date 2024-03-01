@@ -96,3 +96,7 @@ npm run dev:h5
 ├── tsconfig.json              # typescript 配置
 └── vite.config.ts             # vite 配置
 ```
+
+1、订单详情页、购物车页，商品推荐处理。
+2、从商品页进入购物车底部安全区域处理。
+3、商品页收货地址选择处理。

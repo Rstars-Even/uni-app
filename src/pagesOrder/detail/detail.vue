@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { useGuessList } from '@/composables'
 import { ref } from 'vue'
+import { onReady, onLoad } from '@dcloudio/uni-app'
+import type { OrderResult } from '@/types/order'
+import { getMemberOrderByIdAPI } from '@/services/order'
+import { getPayWxPayMiniPayAPI, getPayMockAPI } from '@/services/pay'
+import { OrderState, orderStateList } from '@/services/constants'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -31,8 +36,10 @@ const query = defineProps<{
 
 // 获取页面栈
 const pages = getCurrentPages()
+// console.log('--------------pages-----------', pages);
 // 获取当前页面实例，数组最后一项
-const pageInstance = pages.at(-1) as any
+// const pageInstance = pages.at(-1) as any
+const pageInstance = pages[pages.length - 1] as any //兼容低版本。。
 // 页面渲染完毕，绑定动画效果
 onReady(() => {
   // 动画效果,导航栏背景色
@@ -62,6 +69,38 @@ onReady(() => {
     endScrollOffset: 50,
   })
 })
+//获取订单详情。
+const order = ref<OrderResult>()
+const getMemberOrderByIdData = async () => {
+  const res = await getMemberOrderByIdAPI(query.id)
+  order.value = res.result
+}
+onLoad(() => {
+  getMemberOrderByIdData()
+})
+/**
+ * 倒计时结束事件.
+ */
+const onTimeup = () => {
+  // 修改订单状态为已取消
+  order.value!.orderState = OrderState.YiQuXiao
+}
+/**
+ * 订单支付
+ */
+const onOrderPay = async () => {
+  // 通过环境变量区分开发环境
+  if (import.meta.env.DEV) {
+    // 开发环境：模拟支付，修改订单状态为已支付
+    await getPayMockAPI({ orderId: query.id })
+  } else {
+    // 生产环境：获取支付参数 + 发起微信支付
+    const res = await getPayWxPayMiniPayAPI({ orderId: query.id })
+    await wx.requestPayment(res.result)
+  }
+  // 关闭当前页，再跳转支付结果页
+  uni.redirectTo({ url: `/pagesOrder/payment/payment?id=${query.id}` })
+}
 </script>
 
 <template>
@@ -85,23 +124,30 @@ onReady(() => {
     enable-back-to-top
     @scrolltolower="onScrolltolower"
   >
-    <template v-if="true">
+    <template v-if="order">
       <!-- 订单状态 -->
       <view class="overview" :style="{ paddingTop: safeAreaInsets!.top + 20 + 'px' }">
         <!-- 待付款状态:展示去支付按钮和倒计时 -->
-        <template v-if="true">
+        <template v-if="order.orderState === OrderState.DaiFuKuan">
           <view class="status icon-clock">等待付款</view>
           <view class="tips">
             <text class="money">应付金额: ¥ 99.00</text>
             <text class="time">支付剩余</text>
-            00 时 29 分 59 秒
+            <uni-countdown
+              :second="order.countdown"
+              @timeup="onTimeup"
+              color="#fff"
+              splitor-color="#fff"
+              :show-day="false"
+              :show-colon="false"
+            />
           </view>
-          <view class="button">去支付</view>
+          <view class="button" @tap="onOrderPay">去支付</view>
         </template>
         <!-- 其他订单状态:展示再次购买按钮 -->
         <template v-else>
           <!-- 订单状态文字 -->
-          <view class="status"> 待付款 </view>
+          <view class="status"> {{ orderStateList[order.orderState].text }} </view>
           <view class="button-group">
             <navigator
               class="button"
@@ -199,7 +245,7 @@ onReady(() => {
       <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
         <!-- 待付款状态:展示支付按钮 -->
         <template v-if="true">
-          <view class="button primary"> 去支付 </view>
+          <view class="button primary" @tap="onOrderPay"> 去支付 </view>
           <view class="button" @tap="popup?.open?.()"> 取消订单 </view>
         </template>
         <!-- 其他订单状态:按需展示按钮 -->

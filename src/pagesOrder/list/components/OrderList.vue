@@ -77,12 +77,14 @@ const onOrderPay = async (id: string) => {
   uni.showToast({ title: '模拟支付成功' })
   // 模拟支付提示
   setTimeout(() => {
+    // #ifdef MP-WEIXIN
     wx.showModal({
       title: '温馨提示',
       content: '此交易是模拟支付，您并未付款，不会导致实际购买商品或服务',
       confirmText: '知道了',
       showCancel: false,
     })
+    // #endif
   }, 2000)
   // 更新订单状态
   const order = orderList.value.find((v) => v.id === id)
